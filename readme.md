@@ -24,8 +24,9 @@ Introducing a revolutionary research paper publishing platform that eliminates m
 ### Installation
 
 1. Clone the repo
-   sh
+    ``
    git clone https://github.com/priyanshur66
+   ``
    
    
   
