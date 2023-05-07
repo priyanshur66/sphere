@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sphere DAO</title>
+    <link rel="stylesheet" href="sphere.css">
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.6.1/web3.min.js"></script>
+    <link rel="shortcut icon" href="image/final-logo-1.png" type="image/x-icon" style="height:5px;">
+    <style>
+      body {
+  /* Set position:relative to the body element to make it the reference point for absolute positioning */
+  position: relative;
+}
+
+#loginButton {
+  /* Set position:absolute to make the button element positioned absolutely relative to the body element */
+  position: absolute;
+  top: 17px; /* Adjust this value to move the button up or down */
+  right: 2rem; /* Adjust this value to move the button left or right */
+}
+    </style>
+
+</head>
+<body>
+
+    <link rel="stylesheet" href="https://use.typekit.net/cej6vbe.css">
+    
+    
+ 
+<nav class="sticky top-0">
+ 
+  
+<div class="drip-an">
+  
+    <c><i>Unlock the potential of decentralized research with Sphere DAO - where knowledge is secured, shared, and immortalized on the blockchain." Discover the power of distributed and immutable research paper publication with Sphere DAO - the platform that empowers researchers to collaborate, innovate, and advance knowledge like never before. Join the future of research and be a part of the revolution with Sphere DAO. </i> 
+      
+      
+</c> 
+<button id='loginButton' onclick="" class="mx-auto rounded-full p-2 px-4 bg-blue-700 text-white">
+  Connect Wallet
+</button>
+<p id='userWallet' class='text-lg text-gray-600 my-2'></p>
+<div id="registrationSection" class="hidden">
+  <input type="text" id="userNameInput" placeholder="Enter your name" />
+  <button id="registerButton">Register</button>
+</div>
+</div>
+<script>
+  // Replace this with your contract ABI (Application Binary Interface)
+  const contractABI = [
+    {
+      inputs: [
+        {
+          internalType: "string",
+          name: "userName",
+          type: "string",
+        },
+      ],
+      name: "addUser",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "userAddress",
+          type: "address",
+        },
+      ],
+      name: "getUserData",
+      outputs: [
+        {
+          components: [
+            {
+              internalType: "string",
+              name: "name",
+              type: "string",
+            },
+            {
+              internalType: "uint256[]",
+              name: "publishedPapers",
+              type: "uint256[]",
+            },
+            {
+              internalType: "uint256[]",
+              name: "purchasedPapers",
+              type: "uint256[]",
+            },
+            {
+              internalType: "uint256[]",
+              name: "referencedPapers",
+              type: "uint256[]",
+            },
+          ],
+          internalType: "struct UsersContract.User",
+          name: "",
+          type: "tuple",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "userAddress",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "paperId",
+          type: "uint256",
+        },
+      ],
+      name: "updateUserPublishedPapers",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "userAddress",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "paperId",
+          type: "uint256",
+        },
+      ],
+      name: "updateUserPurchasedPapers",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "userAddress",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "paperId",
+          type: "uint256",
+        },
+      ],
+      name: "updateUserReferencedPapers",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "",
+          type: "address",
+        },
+      ],
+      name: "users",
+      outputs: [
+        {
+          internalType: "string",
+          name: "name",
+          type: "string",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+  ];
+
+  // Replace this with your contract address
+  const contractAddress =
+    "0x45FeA5CA4306403CA3337394e140783102142B51";
+
+  window.userWalletAddress = null;
+  const loginButton = document.getElementById("loginButton");
+  const userWallet = document.getElementById("userWallet");
+
+  function toggleButton() {
+    if (!window.ethereum) {
+      loginButton.innerText = "MetaMask is not installed";
+      loginButton.classList.remove("bg-purple-500", "text-white");
+      loginButton.classList.add(
+        "bg-gray-500",
+        "text-gray-100",
+        "cursor-not-allowed"
+      );
+      return false;
+    }
+
+    loginButton.addEventListener("click", loginWithMetaMask);
+  }
+
+  async function loginWithMetaMask() {
+    const accounts = await window.ethereum
+      .request({ method: "eth_requestAccounts" })
+      .catch((e) => {
+        console.error(e.message);
+        return;
+      });
+    if (!accounts) {
+      return;
+    }
+
+    window.userWalletAddress = accounts[0];
+    userWallet.innerText = window.userWalletAddress;
+    loginButton.innerText = "Sign out of MetaMask";
+
+    loginButton.removeEventListener("click", loginWithMetaMask);
+    setTimeout(() => {
+      loginButton.addEventListener("click", signOutOfMetaMask);
+    }, 200);
+
+    const userExists = await checkUserExists(
+      window.userWalletAddress
+    );
+    if (userExists) {
+      window.location.href = "home.html";
+    } else {
+      document
+        .getElementById("registrationSection")
+        .classList.remove("hidden");
+    }
+  }
+
+  function signOutOfMetaMask() {
+    window.userWalletAddress = null;
+    userWallet.innerText = "";
+    loginButton.innerText = "Sign in with MetaMask";
+
+    loginButton.removeEventListener("click", signOutOfMetaMask);
+    setTimeout(() => {
+      loginButton.addEventListener("click", loginWithMetaMask);
+    }, 200);
+  }
+
+  const web3 = new Web3(window.ethereum);
+  const usersContract = new web3.eth.Contract(
+    contractABI,
+    contractAddress
+  );
+
+  async function checkUserExists(userAddress) {
+    const userData = await usersContract.methods
+      .getUserData(userAddress)
+      .call();
+    return userData.name.length > 0;
+  }
+
+  async function registerUser(userName) {
+    const accounts = await web3.eth.getAccounts();
+    const userAddress = accounts[0];
+
+    if (await checkUserExists(userAddress)) {
+      alert("User already exists");
+      return;
+    }
+
+    try {
+      await usersContract.methods
+        .addUser(userName)
+        .send({ from: userAddress });
+      alert("Successfully registered");
+      window.location.href = "home.html";
+    } catch (error) {
+      console.error(error.message);
+      alert("Error registering user");
+    }
+  }
+
+  document
+    .getElementById("registerButton")
+    .addEventListener("click", async () => {
+      const userNameInput = document.getElementById("userNameInput");
+      const userName = userNameInput.value.trim();
+
+      if (userName.length === 0) {
+        alert("Please enter your name");
+        return;
+      }
+
+      await registerUser(userName);
+    });
+
+  window.addEventListener("DOMContentLoaded", () => {
+    toggleButton();
+  });
+</script>
+ 
+</nav>
+<!-- <div class="btn">
+<button id='loginButton' onclick="" class=" rounded-lg p-2 bg-purple-500 text-black" style="
+    margin-left: 87%;
+    margin-top: ;
+    position:relative;">
+    Connect Wallet
+</button>
+</div> -->
+  
+</div>
+
+ 
+
+ 
+<h1 class="title hero__title">Discover the power of distributed and immutable research paper publication</h1>
+<p class="animation">SPHERE DAO</p>
+<h1 class="head">Why Sphere DAO ?</h1>
+<div class="about__content">
+  <div class="titleText__horizontal">
+    <h2>No <br> Middlemen</h2>
+    <p>With no middlemen involved in our publishing process, we ensure that research papers are accessible to all and at affordable prices.</p>
+  </div>
+  <div class="titleText__horizontal">
+    <h2>No <br> Biasing </h2>
+    <p>Our platform guarantees unbiased publishing by providing equal opportunities for all researchers to share their findings.</p>
+  </div>
+  <div class="titleText__horizontal">
+    <h2>Quality and <br> Authenticity</h2>
+    <p>We maintain high-quality standards and authenticity of published papers through a robust peer-review process, ensuring that only the best research makes it to the readers.</p>
+  </div>
+</div>
+<!-- <section class="section__signup">
+  <img class="signup__image" src="https://narrowdesign.com/ui/assets/images/signup.png">
+</section> -->
+
+
+
+<footer class="bg-gray-600 shadow dark:bg-gray-900 ">
+  <div class="w-full max-w-screen-xl mx-auto p-4 md:py-2">
+      <div class="sm:flex sm:items-center sm:justify-between">
+          <a href="#" class="flex items-center mb-4 sm:mb-0">
+              <img src="image/final-logo-1.png" class="h-12 mr-3" alt="Flowbite Logo" />
+              <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">SPHERE DAO</span>
+          </a>
+          <ul class="flex flex-wrap items-center mb-6 text-sm font-medium text-gray-50 sm:mb-0 dark:text-gray-400">
+              <li>
+                  <a href="#" class="mr-4 hover:underline md:mr-6 ">About</a>
+              </li>
+              
+              <li>
+                  <a href="#" class="mr-4 hover:underline md:mr-6 ">Licensing</a>
+              </li>
+              <li>
+                  <a href="#" class="hover:underline">Contact</a>
+              </li>
+          </ul>
+      </div>
+      <hr class="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
+      <span class="block text-sm text-gray-50 sm:text-center dark:text-gray-50"><a href="#" class="hover:underline">SPHERE DAO</a>. by <a class="hover:underline" href="http://github.com/priyanshur66" span>Priyanshu</a> & <a class="hover:underline" href="http://github.com/akashbiswas0" span>Akash</a> 
+  </div>
+</footer>
+
+
+
+<script src="sphere.js"></script>
+
+</body>
+</html>
